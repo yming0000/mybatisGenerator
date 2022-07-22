@@ -4,6 +4,8 @@
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
 <generatorConfiguration>
     <context id="context">
+        <!-- 插件配置 -->
+        <plugin type="com.ym.mybatis.plugin.LombokPlugin"></plugin>
         <!-- 生成注释配置 -->
         <commentGenerator>
             <property name="suppressAllComments" value="true"/><!-- 是否取消注释 -->
