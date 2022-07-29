@@ -13,7 +13,7 @@ import java.util.List;
 public class ServiceAndControllerPlugin extends PluginAdapter {
 
     // 项目目录，一般为：src/main/java
-    private String targetProject = "./src/main/java";
+    private final String targetProject = "./src/main/java";
 
     // service包名，如：com.ym.service
     private String servicePackage = "com.ym.service";
@@ -33,17 +33,17 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
     // controller类的父类
     private String superController = "com.ym.mybatis.base.BaseController";
 
-    // model类的包名
-    private String modelPackage = "com.ym.model";
-
-    // example类的包名
-    private String examplePackage = "com.ym.model";
-
     private String recordType;
+
+    private String modelPackage;
 
     private String modelName;
 
-    private FullyQualifiedJavaType model;
+    private String exampleType;
+
+    private String examplePackage;
+
+    private String exampleName;
 
     private String serviceName;
 
@@ -52,22 +52,22 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
     private String controllerName;
 
     public boolean validate(List<String> list) {
-        targetProject = StringUtility.stringHasValue(properties.getProperty("targetProject")) ? properties.getProperty("targetProject") : targetProject;
         servicePackage = StringUtility.stringHasValue(properties.getProperty("servicePackage")) ? properties.getProperty("servicePackage") : servicePackage;
         serviceImplPackage = StringUtility.stringHasValue(properties.getProperty("serviceImplPackage")) ? properties.getProperty("serviceImplPackage") : serviceImplPackage;
-        controllerPackage = StringUtility.stringHasValue(properties.getProperty("serviceImplPackage")) ? properties.getProperty("serviceImplPackage") : controllerPackage;
-        superServiceInterface = StringUtility.stringHasValue(properties.getProperty("superServiceInterface")) ? properties.getProperty("superServiceInterface") : superServiceInterface;
-        superServiceImpl = StringUtility.stringHasValue(properties.getProperty("superServiceImpl")) ? properties.getProperty("superServiceImpl") : superServiceImpl;
-        superController = StringUtility.stringHasValue(properties.getProperty("superController")) ? properties.getProperty("superController") : superController;
-        modelPackage = StringUtility.stringHasValue(properties.getProperty("modelPackage")) ? properties.getProperty("modelPackage") : modelPackage;
-        examplePackage = StringUtility.stringHasValue(properties.getProperty("examplePackage")) ? properties.getProperty("examplePackage") : examplePackage;
+        controllerPackage = StringUtility.stringHasValue(properties.getProperty("controllerPackage")) ? properties.getProperty("controllerPackage") : controllerPackage;
+        superServiceInterface = properties.getProperty("superServiceInterface") != null ? properties.getProperty("superServiceInterface") : superServiceInterface;
+        superServiceImpl = properties.getProperty("superServiceImpl") != null ? properties.getProperty("superServiceImpl") : superServiceImpl;
+        superController = properties.getProperty("superController") != null ? properties.getProperty("superController") : superController;
         return true;
     }
 
     public List<GeneratedJavaFile> contextGenerateAdditionalJavaFiles(IntrospectedTable introspectedTable) {
         recordType = introspectedTable.getBaseRecordType();
+        modelPackage = recordType.substring(0, recordType.lastIndexOf("."));
         modelName = recordType.substring(recordType.lastIndexOf(".") + 1);
-        model = new FullyQualifiedJavaType(recordType);
+        exampleType = introspectedTable.getExampleType();
+        examplePackage = exampleType.substring(0, exampleType.lastIndexOf("."));
+        exampleName = exampleType.substring(exampleType.lastIndexOf(".") + 1);
         serviceName = servicePackage + "." + modelName + "Service";
         serviceImplName = serviceImplPackage + "." + modelName + "ServiceImpl";
         controllerName = controllerPackage + "." + modelName + "Controller";
@@ -123,6 +123,10 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         clazz.setVisibility(JavaVisibility.PUBLIC);
         clazz.addImportedType(new FullyQualifiedJavaType("org.springframework.web.bind.annotation.RestController"));
         clazz.addAnnotation("@RestController");
+        if (StringUtility.stringHasValue(superController)) {
+            clazz.addImportedType(new FullyQualifiedJavaType(superController));
+            clazz.setSuperClass(new FullyQualifiedJavaType(superController));
+        }
         String serviceFieldName = StringUtil.toLowerCase(serviceName.substring(serviceName.lastIndexOf(".") + 1));
         Field serviceField = new Field(serviceFieldName, new FullyQualifiedJavaType(serviceName));
         clazz.addImportedType(new FullyQualifiedJavaType(serviceName));

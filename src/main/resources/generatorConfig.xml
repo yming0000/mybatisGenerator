@@ -7,7 +7,14 @@
         <!-- 插件配置 -->
         <plugin type="com.ym.mybatis.plugin.LombokPlugin"></plugin>
         <!-- <plugin type="com.ym.mybatis.plugin.BaseEntityPlugin"></plugin> -->
-        <plugin type="com.ym.mybatis.plugin.ServiceAndControllerPlugin"></plugin>
+        <plugin type="com.ym.mybatis.plugin.ServiceAndControllerPlugin">
+            <property name="servicePackage" value="com.ym.service"/>
+            <property name="serviceImplPackage" value="com.ym.service.impl"/>
+            <property name="controllerPackage" value="com.ym.controller"/>
+            <property name="superServiceInterface" value="com.ym.mybatis.base.BaseService"/>
+            <property name="superServiceImpl" value="com.ym.mybatis.base.BaseServiceImpl"/>
+            <property name="superController" value="com.ym.mybatis.base.BaseController"/>
+        </plugin>
         <!-- 生成注释配置 -->
         <commentGenerator>
             <property name="suppressAllComments" value="true"/><!-- 是否取消注释 -->
