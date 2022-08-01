@@ -51,6 +51,9 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
 
     private String controllerName;
 
+    // 分页查询工具类
+    private String pageUtilClass = "com.ym.mybatis.util.PageUtil";
+
     public boolean validate(List<String> list) {
         servicePackage = StringUtility.stringHasValue(properties.getProperty("servicePackage")) ? properties.getProperty("servicePackage") : servicePackage;
         serviceImplPackage = StringUtility.stringHasValue(properties.getProperty("serviceImplPackage")) ? properties.getProperty("serviceImplPackage") : serviceImplPackage;
@@ -58,6 +61,7 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         superServiceInterface = properties.getProperty("superServiceInterface") != null ? properties.getProperty("superServiceInterface") : superServiceInterface;
         superServiceImpl = properties.getProperty("superServiceImpl") != null ? properties.getProperty("superServiceImpl") : superServiceImpl;
         superController = properties.getProperty("superController") != null ? properties.getProperty("superController") : superController;
+        pageUtilClass = properties.getProperty("pageUtilClass") != null ? properties.getProperty("pageUtilClass") : pageUtilClass;
         return true;
     }
 
@@ -82,12 +86,30 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         FullyQualifiedJavaType service = new FullyQualifiedJavaType(serviceName);
         Interface serviceInterface = new Interface(service);
         serviceInterface.setVisibility(JavaVisibility.PUBLIC);
+        serviceInterface.addImportedType(new FullyQualifiedJavaType(recordType));
         if (StringUtility.stringHasValue(superServiceInterface)) {
             String superServiceInterfaceName = superServiceInterface.substring(superServiceInterface.lastIndexOf(".") + 1);
             serviceInterface.addImportedType(new FullyQualifiedJavaType(superServiceInterface));
-            serviceInterface.addImportedType(new FullyQualifiedJavaType(recordType));
             serviceInterface.addSuperInterface(new FullyQualifiedJavaType(superServiceInterfaceName + "<" + modelName + ">"));
         }
+        // import
+        serviceInterface.addImportedType(new FullyQualifiedJavaType("java.util.List"));
+        serviceInterface.addImportedType(new FullyQualifiedJavaType(exampleType));
+        // Method selectAll
+        Method selectAll = new Method("selectAll");
+        selectAll.setReturnType(new FullyQualifiedJavaType("List<" + modelName + ">"));
+        selectAll.addParameter(new Parameter(new FullyQualifiedJavaType(exampleName), "example"));
+        serviceInterface.addMethod(selectAll);
+        // Method selectByPages
+        Method selectByPages = new Method("selectByPages");
+        selectByPages.setReturnType(new FullyQualifiedJavaType("List<" + modelName + ">"));
+        selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType(exampleName), "example"));
+        serviceInterface.addMethod(selectByPages);
+        // Method deleteByIDs
+        Method deleteByIDs = new Method("deleteByIDs");
+        deleteByIDs.setReturnType(new FullyQualifiedJavaType("int"));
+        deleteByIDs.addParameter(new Parameter(new FullyQualifiedJavaType("Integer[]"), "ids"));
+        serviceInterface.addMethod(deleteByIDs);
         return new GeneratedJavaFile(serviceInterface, targetProject, context.getJavaFormatter());
     }
 
@@ -96,12 +118,12 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         FullyQualifiedJavaType serviceImpl = new FullyQualifiedJavaType(serviceImplName);
         TopLevelClass clazz = new TopLevelClass(serviceImpl);
         clazz.setVisibility(JavaVisibility.PUBLIC);
+        clazz.addImportedType(new FullyQualifiedJavaType(recordType));
         clazz.addImportedType(service);
         clazz.addSuperInterface(service);
         if (StringUtility.stringHasValue(superServiceImpl)) {
             String superServiceImplName = superServiceImpl.substring(superServiceImpl.lastIndexOf(".") + 1);
             clazz.addImportedType(new FullyQualifiedJavaType(superServiceImpl));
-            clazz.addImportedType(new FullyQualifiedJavaType(recordType));
             clazz.setSuperClass(new FullyQualifiedJavaType(superServiceImplName + "<" + modelName + ">"));
         }
         clazz.addImportedType(new FullyQualifiedJavaType("org.springframework.stereotype.Service"));
@@ -114,6 +136,39 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         daoField.addAnnotation("@Autowired");
         daoField.setVisibility(JavaVisibility.PRIVATE);
         clazz.addField(daoField);
+        // import
+        clazz.addImportedType(new FullyQualifiedJavaType("java.util.List"));
+        clazz.addImportedType(new FullyQualifiedJavaType("java.util.Arrays"));
+        clazz.addImportedType(new FullyQualifiedJavaType(exampleType));
+        clazz.addImportedType(new FullyQualifiedJavaType("com.github.pagehelper.PageHelper"));
+        clazz.addImportedType(new FullyQualifiedJavaType(pageUtilClass));
+        // Method selectAll
+        Method selectAll = new Method("selectAll");
+        selectAll.addAnnotation("@Override");
+        selectAll.setVisibility(JavaVisibility.PUBLIC);
+        selectAll.setReturnType(new FullyQualifiedJavaType("List<" + modelName + ">"));
+        selectAll.addParameter(new Parameter(new FullyQualifiedJavaType(exampleName), "example"));
+        selectAll.addBodyLine("return " + daoFieldName + ".selectByExample(example);");
+        clazz.addMethod(selectAll);
+        // Method selectByPages
+        Method selectByPages = new Method("selectByPages");
+        selectByPages.addAnnotation("@Override");
+        selectByPages.setVisibility(JavaVisibility.PUBLIC);
+        selectByPages.setReturnType(new FullyQualifiedJavaType("List<" + modelName + ">"));
+        selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType(exampleName), "example"));
+        selectByPages.addBodyLine("PageHelper.startPage(PageUtil.getPageNum(), PageUtil.getPageSize());");
+        selectByPages.addBodyLine("return selectAll(example);");
+        clazz.addMethod(selectByPages);
+        // Method deleteByIDs
+        Method deleteByIDs = new Method("deleteByIDs");
+        deleteByIDs.addAnnotation("@Override");
+        deleteByIDs.setVisibility(JavaVisibility.PUBLIC);
+        deleteByIDs.setReturnType(new FullyQualifiedJavaType("int"));
+        deleteByIDs.addParameter(new Parameter(new FullyQualifiedJavaType("Integer[]"), "ids"));
+        deleteByIDs.addBodyLine(exampleName + " example = new " + exampleName + "();");
+        deleteByIDs.addBodyLine("example.createCriteria().andIdIn(Arrays.asList(ids));");
+        deleteByIDs.addBodyLine("return " + daoFieldName + ".deleteByExample(example);");
+        clazz.addMethod(deleteByIDs);
         return new GeneratedJavaFile(clazz, targetProject, context.getJavaFormatter());
     }
 

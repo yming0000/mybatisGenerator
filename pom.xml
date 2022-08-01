@@ -16,6 +16,7 @@
         <mysql-connector.version>5.1.1</mysql-connector.version>
         <mybatis.version>3.1.1</mybatis.version>
         <lombok.version>1.18.0</lombok.version>
+        <pagehelper.version>5.1.1</pagehelper.version>
     </properties>
 
     <parent>
@@ -57,6 +58,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
+        </dependency>
+        <!-- pagehelper -->
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper</artifactId>
+            <version>${pagehelper.version}</version>
         </dependency>
     </dependencies>
 

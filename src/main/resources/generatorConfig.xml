@@ -14,6 +14,7 @@
             <property name="superServiceInterface" value="com.ym.mybatis.base.BaseService"/>
             <property name="superServiceImpl" value="com.ym.mybatis.base.BaseServiceImpl"/>
             <property name="superController" value="com.ym.mybatis.base.BaseController"/>
+            <property name="pageUtilClass" value="com.ym.mybatis.util.PageUtil"/>
         </plugin>
         <!-- 生成注释配置 -->
         <commentGenerator>
