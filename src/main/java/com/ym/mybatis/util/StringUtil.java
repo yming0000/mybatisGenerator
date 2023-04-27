@@ -2,7 +2,7 @@ package com.ym.mybatis.util;
 
 public class StringUtil {
 
-    public static String toUpperCase(String str) {
+    public static String toUpperCaseFirst(String str) {
         if (Character.isLowerCase(str.charAt(0)))
             return str;
         else {
@@ -12,7 +12,7 @@ public class StringUtil {
         }
     }
 
-    public static String toLowerCase(String str) {
+    public static String toLowerCaseFirst(String str) {
         if (Character.isLowerCase(str.charAt(0)))
             return str;
         else {

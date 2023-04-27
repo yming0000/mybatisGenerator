@@ -22,11 +22,11 @@ public class ApplicationContextProvider implements ApplicationContextAware {
     }
 
     public static <T> T getBean(String name, Class<T> aClass) {
-        return context.getBean(StringUtil.toLowerCase(name), aClass);
+        return context.getBean(StringUtil.toLowerCaseFirst(name), aClass);
     }
 
     public static Object getBean(String name) {
-        return context.getBean(StringUtil.toLowerCase(name));
+        return context.getBean(StringUtil.toLowerCaseFirst(name));
     }
 
 }
