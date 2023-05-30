@@ -262,7 +262,8 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         selectAll.addAnnotation("@RequestMapping(\"selectAll\")");
         selectAll.setVisibility(JavaVisibility.PUBLIC);
         selectAll.setReturnType(new FullyQualifiedJavaType(messageFieldName));
-        selectAll.addParameter(new Parameter(new FullyQualifiedJavaType(exampleName), StringUtil.toLowerCaseFirst(exampleName)));
+        selectAll.addParameter(new Parameter(new FullyQualifiedJavaType(modelName), StringUtil.toLowerCaseFirst(modelName)));
+        selectAll.addBodyLine(exampleName + " " + StringUtil.toLowerCaseFirst(exampleName) + " = new " + exampleName + "();");
         selectAll.addBodyLine("List<" + modelName + "> " + StringUtil.toLowerCaseFirst(modelName) + "List = " + serviceFieldName + ".selectAll(" + StringUtil.toLowerCaseFirst(exampleName) + ");");
         selectAll.addBodyLine("return Message.successMessage(" + StringUtil.toLowerCaseFirst(modelName) + "List);");
         clazz.addMethod(selectAll);
@@ -271,9 +272,10 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         selectByPages.addAnnotation("@RequestMapping(\"selectByPages\")");
         selectByPages.setVisibility(JavaVisibility.PUBLIC);
         selectByPages.setReturnType(new FullyQualifiedJavaType(messageFieldName));
-        selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType(exampleName), StringUtil.toLowerCaseFirst(exampleName)));
+        selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType(modelName), StringUtil.toLowerCaseFirst(modelName)));
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType("int"), "pageNum"));
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType("int"), "pageSize"));
+        selectByPages.addBodyLine(exampleName + " " + StringUtil.toLowerCaseFirst(exampleName) + " = new " + exampleName + "();");
         selectByPages.addBodyLine("List<" + modelName + "> " + StringUtil.toLowerCaseFirst(modelName) + "List = " + serviceFieldName + ".selectByPages(" + StringUtil.toLowerCaseFirst(exampleName) + ", pageNum, pageSize);");
         selectByPages.addBodyLine("return Message.successMessage(" + StringUtil.toLowerCaseFirst(modelName) + "List);");
         clazz.addMethod(selectByPages);
