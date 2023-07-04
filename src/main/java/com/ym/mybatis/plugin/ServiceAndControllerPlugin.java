@@ -101,8 +101,9 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         selectAll.addParameter(new Parameter(new FullyQualifiedJavaType(exampleName), "example"));
         serviceInterface.addMethod(selectAll);
         // Method selectByPages
+        serviceInterface.addImportedType(new FullyQualifiedJavaType("com.github.pagehelper.PageInfo"));
         Method selectByPages = new Method("selectByPages");
-        selectByPages.setReturnType(new FullyQualifiedJavaType("List<" + modelName + ">"));
+        selectByPages.setReturnType(new FullyQualifiedJavaType("PageInfo<" + modelName + ">"));
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType(exampleName), "example"));
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType("int"), "pageNum"));
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType("int"), "pageSize"));
@@ -156,14 +157,14 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         Method selectByPages = new Method("selectByPages");
         selectByPages.addAnnotation("@Override");
         selectByPages.setVisibility(JavaVisibility.PUBLIC);
-        selectByPages.setReturnType(new FullyQualifiedJavaType("List<" + modelName + ">"));
+        selectByPages.setReturnType(new FullyQualifiedJavaType("PageInfo<" + modelName + ">"));
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType(exampleName), "example"));
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType("int"), "pageNum"));
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType("int"), "pageSize"));
         selectByPages.addBodyLine("PageHelper.startPage(pageNum, pageSize);");
         selectByPages.addBodyLine("List<" + modelName + "> " + StringUtil.toLowerCaseFirst(modelName) + "List = selectAll(example);");
         selectByPages.addBodyLine("PageInfo<" + modelName + "> pageInfo = new PageInfo<>(" + StringUtil.toLowerCaseFirst(modelName) + "List);");
-        selectByPages.addBodyLine("return pageInfo.getList();");
+        selectByPages.addBodyLine("return pageInfo;");
         clazz.addMethod(selectByPages);
         // Method deleteByIDs
         Method deleteByIDs = new Method("deleteByIDs");
@@ -202,6 +203,7 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         clazz.addImportedType(new FullyQualifiedJavaType(exampleType));
         clazz.addImportedType(new FullyQualifiedJavaType(messageClass));
         clazz.addImportedType(new FullyQualifiedJavaType("java.util.List"));
+        clazz.addImportedType(new FullyQualifiedJavaType("com.github.pagehelper.PageInfo"));
         String messageFieldName = messageClass.substring(messageClass.lastIndexOf(".") + 1);
         // Method selectByPrimaryKey
         Method selectByPrimaryKey = new Method("selectByPrimaryKey");
@@ -276,8 +278,8 @@ public class ServiceAndControllerPlugin extends PluginAdapter {
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType("int"), "pageNum"));
         selectByPages.addParameter(new Parameter(new FullyQualifiedJavaType("int"), "pageSize"));
         selectByPages.addBodyLine(exampleName + " " + StringUtil.toLowerCaseFirst(exampleName) + " = new " + exampleName + "();");
-        selectByPages.addBodyLine("List<" + modelName + "> " + StringUtil.toLowerCaseFirst(modelName) + "List = " + serviceFieldName + ".selectByPages(" + StringUtil.toLowerCaseFirst(exampleName) + ", pageNum, pageSize);");
-        selectByPages.addBodyLine("return Message.successMessage(" + StringUtil.toLowerCaseFirst(modelName) + "List);");
+        selectByPages.addBodyLine("PageInfo<" + modelName + "> " + StringUtil.toLowerCaseFirst(modelName) + "PageInfo = " + serviceFieldName + ".selectByPages(" + StringUtil.toLowerCaseFirst(exampleName) + ", pageNum, pageSize);");
+        selectByPages.addBodyLine("return Message.successMessage(" + StringUtil.toLowerCaseFirst(modelName) + "PageInfo);");
         clazz.addMethod(selectByPages);
         // Method deleteByIDs
         Method deleteByIDs = new Method("deleteByIDs");
